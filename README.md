@@ -4,7 +4,7 @@
 ## Установка
 Если хотите побаловаться с этим "шедевром",то просто клоньте репозиторий
 ```bash
-   git clone https://github.com/username/repo-name.git
+   https://github.com/monkey-mess/authentication-service.git
 ```
 ## Технологии
 
