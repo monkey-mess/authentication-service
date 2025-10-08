@@ -8,6 +8,6 @@
 ```
 ## Технологии
 
-*   [Java]([https://www.java.com/]) - Основной язык программирования
-*   [Spring Framework]([https://spring.io/]) - Веб-фреймворк
+*   [Java](https://www.java.com/) - Основной язык программирования
+*   [Spring Framework](https://spring.io/) - Веб-фреймворк
 *   [PostgreSQL](https://www.postgresql.org/) - База данных
