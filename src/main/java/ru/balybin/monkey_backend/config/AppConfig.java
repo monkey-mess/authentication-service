@@ -21,7 +21,7 @@ public class AppConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//не создаём сессии,т.к. есть жвт
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/**").authenticated()
@@ -37,13 +37,13 @@ public class AppConfig {
         return http.build();
     }
 
-    // Вынес CORS-конфигурацию в отдельный метод для читаемости
+    //CORS-конфигурация
     private CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             CorsConfiguration cfg = new CorsConfiguration();
             cfg.setAllowedOrigins(List.of("http://localhost:5252"));
             cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));//указываем разрешённые методы
-            cfg.setAllowCredentials(true);
+            cfg.setAllowCredentials(true);//учётные данные
             cfg.setAllowedHeaders(List.of("*"));
             cfg.setExposedHeaders(List.of("Authorization"));
             cfg.setMaxAge(3600L);
