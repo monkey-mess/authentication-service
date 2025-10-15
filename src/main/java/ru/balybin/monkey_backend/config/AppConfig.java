@@ -2,6 +2,8 @@ package ru.balybin.monkey_backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,7 +13,6 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -21,9 +22,10 @@ public class AppConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//не создаём сессии,т.к. есть жвт
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
@@ -37,13 +39,13 @@ public class AppConfig {
         return http.build();
     }
 
-    // Вынес CORS-конфигурацию в отдельный метод для читаемости
+    //CORS-конфигурация
     private CorsConfigurationSource corsConfigurationSource() {
         return request -> {
             CorsConfiguration cfg = new CorsConfiguration();
             cfg.setAllowedOrigins(List.of("http://localhost:5252"));
             cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));//указываем разрешённые методы
-            cfg.setAllowCredentials(true);
+            cfg.setAllowCredentials(true);//учётные данные
             cfg.setAllowedHeaders(List.of("*"));
             cfg.setExposedHeaders(List.of("Authorization"));
             cfg.setMaxAge(3600L);
@@ -54,6 +56,11 @@ public class AppConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
 }
