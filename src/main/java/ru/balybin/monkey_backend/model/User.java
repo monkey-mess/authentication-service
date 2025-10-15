@@ -1,46 +1,52 @@
 package ru.balybin.monkey_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 
 @Entity
+@Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String full_name;
+    @Column(unique = true, nullable = false)
+    private String username;
+    @Column(unique = true, nullable = false)
     private String email;
+
     private String profile_picture;
+
+    @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
-    public User() {
+    public User() {}
 
-    }
-
-    public User(int id, String full_name, String email, String profile_picture, String password) {
+    public User(Long id, String username, String email, String profile_picture, String password) {
         super();
         this.id = id;
-        this.full_name = full_name;
+        this.username = username;
         this.email = email;
         this.profile_picture = profile_picture;
         this.password = password;
 
     }
 
-    public String getFull_name() {
-        return full_name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setFull_name(String full_name) {
-        this.full_name = full_name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

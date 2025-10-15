@@ -25,6 +25,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         String jwt = request.getHeader(JwtConstant.JWT_HEADER); // Используем константу
 
         if (jwt != null && jwt.startsWith("Bearer ")) {
@@ -42,7 +43,11 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                 String username = claims.get("email", String.class);
                 String authorities = claims.get("authorities", String.class);
 
-                List<GrantedAuthority> grantedAuthorities = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
+                //Если authorities null, устанавливаем пустой список
+                List<GrantedAuthority> grantedAuthorities = (authorities != null)
+                        ? AuthorityUtils.commaSeparatedStringToAuthorityList(authorities)
+                        : AuthorityUtils.NO_AUTHORITIES;
+
                 Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, grantedAuthorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);/* Создаем аутентификационный
                 объект с именем пользователя и правами, затем устанавливаем его в контекст безопасности.*/

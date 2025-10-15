@@ -4,11 +4,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-
+import java.util.stream.Collectors;
 
 @Service
 public class TokenProvider {
@@ -16,17 +17,26 @@ public class TokenProvider {
     SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
 
     public String generateToken(Authentication auth) {
-        return Jwts.builder()
-                .issuer("MONKEY_MESS")
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 86400000))
+        // Получаем роли пользователя
+        String authorities = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        String jwt= Jwts.builder().issuer("MONKEY_MESS")
+                .issuedAt(new Date()).expiration(new Date(new Date().getTime() + 86400000))
                 .claim("email", auth.getName())
+                .claim("authorities", authorities) // Добавляем authorities в токен
                 .signWith(key)
                 .compact();
+        return jwt;
     }
 
     public String getEmailFromToken(String jwt) {
-        jwt = jwt.substring(7);
+        // Обрабатываем случай, когда токен приходит с "Bearer " префиксом
+        if (jwt.startsWith("Bearer ")) {
+            jwt = jwt.substring(7);
+        }
+
         Claims claims = Jwts.parser()
                 .verifyWith(key)
                 .build()
