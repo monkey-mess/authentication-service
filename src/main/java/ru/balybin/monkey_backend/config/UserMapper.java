@@ -33,11 +33,12 @@ public class UserMapper {
     public UserInfoResponse toInfoResponse(User user) {
         if(user == null) return null;
 
-        return new UserInfoResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getProfile_picture()
-        );
+        UserInfoResponse response = new UserInfoResponse();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setEmail(user.getEmail());
+        response.setProfilePicture(user.getProfile_picture());
+        return response;
     }
 
     public void updateUserFromRequest(User user, UpdateProfileRequest request) {
