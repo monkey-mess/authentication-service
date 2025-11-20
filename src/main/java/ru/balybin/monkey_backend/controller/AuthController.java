@@ -13,7 +13,6 @@ import ru.balybin.monkey_backend.config.TokenProvider;
 import ru.balybin.monkey_backend.config.UserMapper;
 import ru.balybin.monkey_backend.exception.UserException;
 import ru.balybin.monkey_backend.model.User;
-import ru.balybin.monkey_backend.request.UpdateUserRequest;
 import ru.balybin.monkey_backend.service.UserService;
 
 @RestController

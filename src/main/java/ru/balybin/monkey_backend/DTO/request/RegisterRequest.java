@@ -5,10 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
-
-    @NotNull(message = "Username is required")
-    private String username;
-
     @NotNull(message = "Email is required")
     @Email(message = "Email should be valid")
     private String email;
@@ -17,23 +13,12 @@ public class RegisterRequest {
     @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 
-    private String profilePicture;
 
     public RegisterRequest() {}
 
-    public RegisterRequest(String username, String email, String password, String profilePicture) {
-        this.username = username;
+    public RegisterRequest(String email, String password) {
         this.email = email;
         this.password = password;
-        this.profilePicture = profilePicture;
-    }
-
-    public String getProfilePicture() {
-        return profilePicture;
-    }
-
-    public void setProfilePicture(String profilePicture) {
-        this.profilePicture = profilePicture;
     }
 
     public String getPassword() {
@@ -50,13 +35,5 @@ public class RegisterRequest {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 }

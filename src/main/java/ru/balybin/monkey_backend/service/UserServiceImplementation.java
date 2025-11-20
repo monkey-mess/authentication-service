@@ -10,10 +10,10 @@ import ru.balybin.monkey_backend.config.UserMapper;
 import ru.balybin.monkey_backend.exception.UserException;
 import ru.balybin.monkey_backend.model.User;
 import ru.balybin.monkey_backend.repository.UserRepository;
-import ru.balybin.monkey_backend.request.UpdateUserRequest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserServiceImplementation implements UserService {
@@ -52,7 +52,7 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public User findUserById(Long id) {
+    public User findUserById(UUID id) {
         Optional<User> opt = userRepository.findById(id);
         if(opt.isPresent()){
             return opt.get();
@@ -71,7 +71,7 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserProfileResponse updateUser(Long userId, UpdateProfileRequest req) throws UserException {
+    public UserProfileResponse updateUser(UUID userId, UpdateProfileRequest req) throws UserException {
         User user = findUserById(userId);
         userMapper.updateUserFromRequest(user, req);
         User updatedUser = userRepository.save(user);

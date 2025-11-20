@@ -13,6 +13,8 @@ import ru.balybin.monkey_backend.exception.UserException;
 import ru.balybin.monkey_backend.model.User;
 import ru.balybin.monkey_backend.repository.UserRepository;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -45,9 +47,8 @@ class UserServiceImplementationTest {
         testPassword = "password123";
         
         testUser = new User();
-        testUser.setId(1L);
+        testUser.setId(UUID.randomUUID());
         testUser.setEmail(testEmail);
-        testUser.setUsername("testuser");
         testUser.setPassword("encodedPassword");
     }
 
@@ -57,7 +58,6 @@ class UserServiceImplementationTest {
         User newUser = new User();
         newUser.setEmail(testEmail);
         newUser.setPassword(testPassword);
-        newUser.setUsername("newuser");
 
         when(userRepository.existsByEmail(testEmail)).thenReturn(false);
         when(passwordEncoder.encode(testPassword)).thenReturn("encodedPassword");
@@ -126,7 +126,7 @@ class UserServiceImplementationTest {
     @Test
     void testFindUserById_Success() {
         // Arrange
-        Long userId = 1L;
+        UUID userId = UUID.randomUUID();
         when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(testUser));
 
         // Act
@@ -141,7 +141,7 @@ class UserServiceImplementationTest {
     @Test
     void testFindUserById_UserNotFound() {
         // Arrange
-        Long userId = 999L;
+        UUID userId = UUID.randomUUID();
         when(userRepository.findById(userId)).thenReturn(java.util.Optional.empty());
 
         // Act & Assert

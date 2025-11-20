@@ -2,29 +2,19 @@ package ru.balybin.monkey_backend.request;
 
 public class UpdateUserRequest {
 
-    private String full_name;
-    private String profile_picture;
+    private String email;
 
     public UpdateUserRequest() {}
 
-    public UpdateUserRequest(String full_name, String profile_picture) {
-        this.full_name = full_name;
-        this.profile_picture = profile_picture;
+    public UpdateUserRequest(String email) {
+        this.email = email;
     }
 
-    public String getFull_name() {
-        return full_name;
+    public String getEmail() {
+        return email;
     }
 
-    public void setFull_name(String full_name) {
-        this.full_name = full_name;
-    }
-
-    public String getProfile_picture() {
-        return profile_picture;
-    }
-
-    public void setProfile_picture(String profile_picture) {
-        this.profile_picture = profile_picture;
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

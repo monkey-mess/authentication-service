@@ -2,21 +2,21 @@ package ru.balybin.monkey_backend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.UuidGenerator;
+
+import java.util.UUID;
 
 
 @Entity
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
+    private UUID id;
 
-    @Column(unique = true, nullable = false)
-    private String username;
     @Column(unique = true, nullable = false)
     private String email;
-
-    private String profile_picture;
 
     @Column(nullable = false)
     @JsonIgnore
@@ -24,29 +24,19 @@ public class User {
 
     public User() {}
 
-    public User(Long id, String username, String email, String profile_picture, String password) {
+    public User(UUID id, String email, String password) {
         super();
         this.id = id;
-        this.username = username;
         this.email = email;
-        this.profile_picture = profile_picture;
         this.password = password;
 
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -56,14 +46,6 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getProfile_picture() {
-        return profile_picture;
-    }
-
-    public void setProfile_picture(String profile_picture) {
-        this.profile_picture = profile_picture;
     }
 
     public String getPassword() {

@@ -11,6 +11,8 @@ import ru.balybin.monkey_backend.exception.UserException;
 import ru.balybin.monkey_backend.model.User;
 import ru.balybin.monkey_backend.repository.UserRepository;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -29,13 +31,11 @@ class AuthServiceIntegrationTest {
 
     private String testEmail;
     private String testPassword;
-    private String testUsername;
 
     @BeforeEach
     void setUp() {
         testEmail = "test@example.com";
         testPassword = "password123";
-        testUsername = "testuser";
         userRepository.deleteAll();
     }
 
@@ -44,7 +44,6 @@ class AuthServiceIntegrationTest {
         // Arrange
         User user = new User();
         user.setEmail(testEmail);
-        user.setUsername(testUsername);
         user.setPassword(testPassword);
 
         // Act
@@ -54,7 +53,6 @@ class AuthServiceIntegrationTest {
         assertNotNull(savedUser);
         assertNotNull(savedUser.getId());
         assertEquals(testEmail, savedUser.getEmail());
-        assertEquals(testUsername, savedUser.getUsername());
         assertNotEquals(testPassword, savedUser.getPassword()); // Password should be encoded
         assertTrue(passwordEncoder.matches(testPassword, savedUser.getPassword()));
 
@@ -69,13 +67,11 @@ class AuthServiceIntegrationTest {
         // Arrange - create existing user
         User existingUser = new User();
         existingUser.setEmail(testEmail);
-        existingUser.setUsername("existinguser");
         existingUser.setPassword(passwordEncoder.encode(testPassword));
         userRepository.save(existingUser);
 
         User newUser = new User();
         newUser.setEmail(testEmail);
-        newUser.setUsername("newuser");
         newUser.setPassword(testPassword);
 
         // Act & Assert
@@ -92,7 +88,6 @@ class AuthServiceIntegrationTest {
         // Arrange - create user
         User user = new User();
         user.setEmail(testEmail);
-        user.setUsername(testUsername);
         user.setPassword(passwordEncoder.encode(testPassword));
         userRepository.save(user);
 
@@ -102,7 +97,6 @@ class AuthServiceIntegrationTest {
         // Assert
         assertNotNull(foundUser);
         assertEquals(testEmail, foundUser.getEmail());
-        assertEquals(testUsername, foundUser.getUsername());
     }
 
     @Test
@@ -120,7 +114,6 @@ class AuthServiceIntegrationTest {
         // Arrange - create user
         User user = new User();
         user.setEmail(testEmail);
-        user.setUsername(testUsername);
         user.setPassword(passwordEncoder.encode(testPassword));
         User savedUser = userRepository.save(user);
 
@@ -131,14 +124,13 @@ class AuthServiceIntegrationTest {
         assertNotNull(foundUser);
         assertEquals(savedUser.getId(), foundUser.getId());
         assertEquals(testEmail, foundUser.getEmail());
-        assertEquals(testUsername, foundUser.getUsername());
     }
 
     @Test
     void testFindUserById_Integration_NotFound() {
         // Act & Assert
         UserException exception = assertThrows(UserException.class, () -> {
-            userService.findUserById(999L);
+            userService.findUserById(UUID.randomUUID());
         });
 
         assertTrue(exception.getMessage().contains("User not found with id"));
@@ -149,7 +141,6 @@ class AuthServiceIntegrationTest {
         // Step 1: Register user
         User user = new User();
         user.setEmail(testEmail);
-        user.setUsername(testUsername);
         user.setPassword(testPassword);
 
         User savedUser = userService.registerUser(user);
@@ -170,7 +161,6 @@ class AuthServiceIntegrationTest {
         // Arrange
         User user = new User();
         user.setEmail(testEmail);
-        user.setUsername(testUsername);
         user.setPassword(testPassword);
 
         // Act

@@ -7,7 +7,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -53,7 +52,11 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                 объект с именем пользователя и правами, затем устанавливаем его в контекст безопасности.*/
 
             } catch (Exception e) {
-                throw new BadCredentialsException("Invalid token received", e);
+                SecurityContextHolder.clearContext();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Invalid token received\"}");
+                return;
             }
         }
         filterChain.doFilter(request, response);

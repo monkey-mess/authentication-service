@@ -40,13 +40,11 @@ class AuthControllerIntegrationTest {
 
     private String testEmail;
     private String testPassword;
-    private String testUsername;
 
     @BeforeEach
     void setUp() {
         testEmail = "test@example.com";
         testPassword = "password123";
-        testUsername = "testuser";
         userRepository.deleteAll();
     }
 
@@ -54,7 +52,6 @@ class AuthControllerIntegrationTest {
     void testRegister_Integration_Success() throws Exception {
         // Arrange
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(testUsername);
         registerRequest.setEmail(testEmail);
         registerRequest.setPassword(testPassword);
 
@@ -65,14 +62,12 @@ class AuthControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
                 .andExpect(jsonPath("$.token").isNotEmpty())
-                .andExpect(jsonPath("$.userInfo.email").value(testEmail))
-                .andExpect(jsonPath("$.userInfo.username").value(testUsername));
+                .andExpect(jsonPath("$.userInfo.email").value(testEmail));
 
         // Verify user was saved in database
         User savedUser = userRepository.findByEmail(testEmail);
         assertNotNull(savedUser);
         assertEquals(testEmail, savedUser.getEmail());
-        assertEquals(testUsername, savedUser.getUsername());
         assertTrue(passwordEncoder.matches(testPassword, savedUser.getPassword()));
     }
 
@@ -81,20 +76,18 @@ class AuthControllerIntegrationTest {
         // Arrange - create existing user
         User existingUser = new User();
         existingUser.setEmail(testEmail);
-        existingUser.setUsername("existinguser");
         existingUser.setPassword(passwordEncoder.encode(testPassword));
         userRepository.save(existingUser);
 
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername("newuser");
         registerRequest.setEmail(testEmail);
         registerRequest.setPassword("newpassword123");
 
-        // Act & Assert
+        // Act & Assert - Change from isInternalServerError() to isBadRequest()
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest()); // Changed from isInternalServerError()
 
         // Verify only one user exists
         assertEquals(1, userRepository.count());
@@ -105,7 +98,6 @@ class AuthControllerIntegrationTest {
         // Arrange - create user
         User user = new User();
         user.setEmail(testEmail);
-        user.setUsername(testUsername);
         user.setPassword(passwordEncoder.encode(testPassword));
         userRepository.save(user);
 
@@ -120,8 +112,7 @@ class AuthControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists())
                 .andExpect(jsonPath("$.token").isNotEmpty())
-                .andExpect(jsonPath("$.userInfo.email").value(testEmail))
-                .andExpect(jsonPath("$.userInfo.username").value(testUsername));
+                .andExpect(jsonPath("$.userInfo.email").value(testEmail));
     }
 
     @Test
@@ -129,7 +120,6 @@ class AuthControllerIntegrationTest {
         // Arrange - create user
         User user = new User();
         user.setEmail(testEmail);
-        user.setUsername(testUsername);
         user.setPassword(passwordEncoder.encode(testPassword));
         userRepository.save(user);
 
@@ -137,12 +127,13 @@ class AuthControllerIntegrationTest {
         loginRequest.setEmail(testEmail);
         loginRequest.setPassword("wrongPassword");
 
-        // Act & Assert
+        // Act & Assert - Change from isInternalServerError() to isBadRequest()
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest()); // Changed from isInternalServerError()
     }
+
 
     @Test
     void testLogin_Integration_UserNotFound() throws Exception {
@@ -151,18 +142,17 @@ class AuthControllerIntegrationTest {
         loginRequest.setEmail("nonexistent@example.com");
         loginRequest.setPassword(testPassword);
 
-        // Act & Assert
+        // Act & Assert - Change from isInternalServerError() to isBadRequest()
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest()); // Changed from isInternalServerError()
     }
 
     @Test
     void testRegisterAndLogin_Integration_FullFlow() throws Exception {
         // Step 1: Register
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(testUsername);
         registerRequest.setEmail(testEmail);
         registerRequest.setPassword(testPassword);
 
@@ -194,7 +184,6 @@ class AuthControllerIntegrationTest {
     void testRegister_Integration_InvalidEmail() throws Exception {
         // Arrange
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(testUsername);
         registerRequest.setEmail("invalid-email");
         registerRequest.setPassword(testPassword);
 
@@ -209,7 +198,6 @@ class AuthControllerIntegrationTest {
     void testRegister_Integration_ShortPassword() throws Exception {
         // Arrange
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(testUsername);
         registerRequest.setEmail(testEmail);
         registerRequest.setPassword("short"); // Less than 8 characters
 

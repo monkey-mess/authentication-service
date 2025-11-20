@@ -1,34 +1,25 @@
 package ru.balybin.monkey_backend.DTO.response;
 
+import java.util.UUID;
+
 public class UserProfileResponse {
-    private Long id;
-    private String username;
+    private UUID id;
     private String email;
-    private String profilePicture;
 
     public UserProfileResponse() {}
 
-    public UserProfileResponse(Long id, String username, String email, String profilePicture) {
+    public UserProfileResponse(UUID id, String email) {
         this.id = id;
-        this.username = username;
         this.email = email;
-        this.profilePicture = profilePicture;
     }
 
-    public Long getId() {
+
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getEmail() {
@@ -39,11 +30,4 @@ public class UserProfileResponse {
         this.email = email;
     }
 
-    public String getProfilePicture() {
-        return profilePicture;
-    }
-
-    public void setProfilePicture(String profilePicture) {
-        this.profilePicture = profilePicture;
-    }
 }

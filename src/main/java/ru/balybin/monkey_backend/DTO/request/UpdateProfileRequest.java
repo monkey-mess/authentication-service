@@ -1,27 +1,19 @@
 package ru.balybin.monkey_backend.DTO.request;
 
 public class UpdateProfileRequest {
-    private String username;
-    private String profilePicture;
+    private String email;
 
     public UpdateProfileRequest() {}
 
-    public UpdateProfileRequest(String username, String profilePicture) {
-        this.username = username;
-        this.profilePicture = profilePicture;
+    public UpdateProfileRequest(String email) {
+        this.email = email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
-    public void setProfilePicture(String profilePicture) {
-        this.profilePicture = profilePicture;
-    }
-    public String getProfilePicture() {
-        return profilePicture;
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

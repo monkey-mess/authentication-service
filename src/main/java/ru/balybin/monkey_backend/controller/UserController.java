@@ -11,6 +11,7 @@ import ru.balybin.monkey_backend.service.UserService;
 import ru.balybin.monkey_backend.config.UserMapper;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,7 +35,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     public ResponseEntity<UserProfileResponse> updateUser(
-            @PathVariable Long userId,
+            @PathVariable UUID userId,
             @Valid @RequestBody UpdateProfileRequest request) {
         UserProfileResponse updatedUser = userService.updateUser(userId, request);
         return ResponseEntity.ok(updatedUser);
@@ -49,7 +50,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<UserInfoResponse> getUserById(
             @RequestHeader("Authorization") String jwt,
-            @PathVariable Long userId) {
+            @PathVariable UUID userId) {
         // Валидация токена происходит через JwtTokenValidator
         User user = userService.findUserById(userId);
         UserInfoResponse userInfo = userMapper.toInfoResponse(user);
@@ -59,7 +60,7 @@ public class UserController {
     @PostMapping("/batch")
     public ResponseEntity<List<UserInfoResponse>> getUsersByIds(
             @RequestHeader("Authorization") String jwt,
-            @RequestBody List<Long> userIds) {
+            @RequestBody List<UUID> userIds) {
         // Валидация токена происходит через JwtTokenValidator
         List<UserInfoResponse> users = userIds.stream()
                 .map(userId -> {

@@ -22,6 +22,8 @@ import ru.balybin.monkey_backend.exception.UserException;
 import ru.balybin.monkey_backend.model.User;
 import ru.balybin.monkey_backend.service.UserService;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -64,9 +66,8 @@ class AuthControllerTest {
         testJwt = "test.jwt.token";
 
         testUser = new User();
-        testUser.setId(1L);
+        testUser.setId(UUID.randomUUID());
         testUser.setEmail(testEmail);
-        testUser.setUsername("testuser");
         testUser.setPassword("encodedPassword");
     }
 
@@ -74,12 +75,11 @@ class AuthControllerTest {
     void testRegister_Success() throws Exception {
         // Arrange
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername("testuser");
         registerRequest.setEmail(testEmail);
         registerRequest.setPassword(testPassword);
 
         UserProfileResponse profileResponse = new UserProfileResponse(
-                1L, "testuser", testEmail, null
+                UUID.randomUUID(), testEmail
         );
 
         when(userMapper.toEntity(any(RegisterRequest.class))).thenReturn(testUser);
@@ -107,12 +107,11 @@ class AuthControllerTest {
     void testRegister_WithMockMvc() throws Exception {
         // Arrange
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername("testuser");
         registerRequest.setEmail(testEmail);
         registerRequest.setPassword(testPassword);
 
         UserProfileResponse profileResponse = new UserProfileResponse(
-                1L, "testuser", testEmail, null
+                UUID.randomUUID(), testEmail
         );
 
         when(userMapper.toEntity(any(RegisterRequest.class))).thenReturn(testUser);
@@ -137,7 +136,7 @@ class AuthControllerTest {
         loginRequest.setPassword(testPassword);
 
         UserProfileResponse profileResponse = new UserProfileResponse(
-                1L, "testuser", testEmail, null
+                UUID.randomUUID(), testEmail
         );
 
         when(userService.findUserByEmail(testEmail)).thenReturn(testUser);
@@ -190,7 +189,7 @@ class AuthControllerTest {
         loginRequest.setPassword(testPassword);
 
         UserProfileResponse profileResponse = new UserProfileResponse(
-                1L, "testuser", testEmail, null
+                UUID.randomUUID(), testEmail
         );
 
         when(userService.findUserByEmail(testEmail)).thenReturn(testUser);

@@ -12,10 +12,8 @@ public class UserMapper {
 
     public User toEntity(RegisterRequest request) {
         User user = new User();
-        user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
-        user.setProfile_picture(request.getProfilePicture());
         return user;
     }
 
@@ -24,32 +22,23 @@ public class UserMapper {
 
         return new UserProfileResponse(
                 user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getProfile_picture()
+                user.getEmail()
         );
     }
 
     public UserInfoResponse toInfoResponse(User user) {
-        if(user == null) return null;
-
-        UserInfoResponse response = new UserInfoResponse();
-        response.setId(user.getId());
-        response.setUsername(user.getUsername());
-        response.setEmail(user.getEmail());
-        response.setProfilePicture(user.getProfile_picture());
-        return response;
+        if (user == null) {
+            return null;
+        }
+        return new UserInfoResponse(user.getId(), user.getEmail());
     }
 
-    public void updateUserFromRequest(User user, UpdateProfileRequest request) {
-        if(request == null) return;
-
-        if(request.getUsername() != null) {
-            user.setUsername(request.getUsername());
+    public void updateUserFromRequest(User user, UpdateProfileRequest req) {
+        if (user == null || req == null) {
+            return;
         }
-
-        if(request.getProfilePicture() != null) {
-            user.setProfile_picture(request.getProfilePicture());
+        if (req.getEmail() != null && !req.getEmail().isBlank()) {
+            user.setEmail(req.getEmail());
         }
     }
 }
