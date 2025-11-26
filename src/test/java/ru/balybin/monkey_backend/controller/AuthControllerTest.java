@@ -84,7 +84,7 @@ class AuthControllerTest {
 
         when(userMapper.toEntity(any(RegisterRequest.class))).thenReturn(testUser);
         when(userService.registerUser(any(User.class))).thenReturn(testUser);
-        when(tokenProvider.generateToken(any())).thenReturn(testJwt);
+        when(tokenProvider.generateToken(any(), any())).thenReturn(testJwt);
         when(userMapper.toProfileResponse(any(User.class))).thenReturn(profileResponse);
 
         // Act
@@ -116,7 +116,7 @@ class AuthControllerTest {
 
         when(userMapper.toEntity(any(RegisterRequest.class))).thenReturn(testUser);
         when(userService.registerUser(any(User.class))).thenReturn(testUser);
-        when(tokenProvider.generateToken(any())).thenReturn(testJwt);
+        when(tokenProvider.generateToken(any(), any())).thenReturn(testJwt);
         when(userMapper.toProfileResponse(any(User.class))).thenReturn(profileResponse);
 
         // Act & Assert
@@ -141,7 +141,7 @@ class AuthControllerTest {
 
         when(userService.findUserByEmail(testEmail)).thenReturn(testUser);
         when(passwordEncoder.matches(testPassword, testUser.getPassword())).thenReturn(true);
-        when(tokenProvider.generateToken(any())).thenReturn(testJwt);
+        when(tokenProvider.generateToken(any(), any())).thenReturn(testJwt);
         when(userMapper.toProfileResponse(any(User.class))).thenReturn(profileResponse);
 
         // Act

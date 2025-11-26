@@ -21,6 +21,12 @@ import java.util.List;
 //Проверяем наличие и валидность токена,если всё ок,то аутентификация устанавливается в контекст спринга
 public class JwtTokenValidator extends OncePerRequestFilter {
 
+    private final SecretKey key;
+
+    public JwtTokenValidator(String jwtSecret) {
+        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -30,8 +36,6 @@ public class JwtTokenValidator extends OncePerRequestFilter {
         if (jwt != null && jwt.startsWith("Bearer ")) {
             try {
                 jwt = jwt.substring(7);//удаление bearer
-
-                SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
 
                 Claims claims = Jwts.parser()
                         .verifyWith(key)//указываем ключ,которым проверяем подпись токена

@@ -1,5 +1,6 @@
 package ru.balybin.monkey_backend.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +20,12 @@ import java.util.List;
 public class AppConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public JwtTokenValidator jwtTokenValidator(@Value("${auth.jwt.secret}") String jwtSecret) {
+        return new JwtTokenValidator(jwtSecret);
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenValidator jwtTokenValidator) throws Exception {
         http
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//не создаём сессии,т.к. есть жвт
@@ -29,7 +35,7 @@ public class AppConfig {
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
-                .addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
+                .addFilterBefore(jwtTokenValidator, BasicAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .formLogin(form -> form.disable())

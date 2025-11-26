@@ -36,7 +36,7 @@ public class AuthController  {
         User user = userMapper.toEntity(request);
         User savedUser = userService.registerUser(user);
         Authentication auth = new UsernamePasswordAuthenticationToken(savedUser.getEmail(), null);
-        String jwt = tokenProvider.generateToken(auth);
+        String jwt = tokenProvider.generateToken(auth, savedUser.getId());
         AuthResponse authResponse = new AuthResponse(jwt, userMapper.toProfileResponse(savedUser));
         return ResponseEntity.ok(authResponse);
     }
@@ -50,7 +50,7 @@ public class AuthController  {
 
         Authentication auth = new UsernamePasswordAuthenticationToken(user.getEmail(), null);
 
-        String jwt = tokenProvider.generateToken(auth);
+        String jwt = tokenProvider.generateToken(auth, user.getId());
         AuthResponse authResponse = new AuthResponse(jwt, userMapper.toProfileResponse(user));
 
         return ResponseEntity.ok(authResponse);
