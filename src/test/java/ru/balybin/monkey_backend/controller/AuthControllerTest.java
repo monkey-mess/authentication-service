@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -99,7 +100,7 @@ class AuthControllerTest {
 
         verify(userMapper, times(1)).toEntity(any(RegisterRequest.class));
         verify(userService, times(1)).registerUser(any(User.class));
-        verify(tokenProvider, times(1)).generateToken(any());
+        verify(tokenProvider, times(1)).generateToken(any(Authentication.class), any(UUID.class));
         verify(userMapper, times(1)).toProfileResponse(any(User.class));
     }
 
@@ -156,7 +157,7 @@ class AuthControllerTest {
 
         verify(userService, times(1)).findUserByEmail(testEmail);
         verify(passwordEncoder, times(1)).matches(testPassword, testUser.getPassword());
-        verify(tokenProvider, times(1)).generateToken(any());
+        verify(tokenProvider, times(1)).generateToken(any(Authentication.class), any(UUID.class));
         verify(userMapper, times(1)).toProfileResponse(any(User.class));
     }
 
@@ -178,7 +179,7 @@ class AuthControllerTest {
         assertEquals("Wrong password", exception.getMessage());
         verify(userService, times(1)).findUserByEmail(testEmail);
         verify(passwordEncoder, times(1)).matches("wrongPassword", testUser.getPassword());
-        verify(tokenProvider, never()).generateToken(any());
+        verify(tokenProvider, never()).generateToken(any(Authentication.class), any(UUID.class));
     }
 
     @Test
@@ -194,7 +195,7 @@ class AuthControllerTest {
 
         when(userService.findUserByEmail(testEmail)).thenReturn(testUser);
         when(passwordEncoder.matches(testPassword, testUser.getPassword())).thenReturn(true);
-        when(tokenProvider.generateToken(any())).thenReturn(testJwt);
+        when(tokenProvider.generateToken(any(Authentication.class), any(UUID.class)));
         when(userMapper.toProfileResponse(any(User.class))).thenReturn(profileResponse);
 
         // Act & Assert

@@ -5,15 +5,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TokenProviderTest {
 
     private TokenProvider tokenProvider;
+    private final String TEST_SECRET_KEY = "testSecretKey123456789012345678901234567890";
+    private final UUID TEST_USER_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        tokenProvider = new TokenProvider();
+        tokenProvider = new TokenProvider(TEST_SECRET_KEY);
     }
 
     @Test
@@ -22,7 +26,7 @@ class TokenProviderTest {
         Authentication auth = new UsernamePasswordAuthenticationToken("test@example.com", null);
 
         // Act
-        String token = tokenProvider.generateToken(auth);
+        String token = tokenProvider.generateToken(auth, TEST_USER_ID);
 
         // Assert
         assertNotNull(token);
@@ -34,7 +38,7 @@ class TokenProviderTest {
         // Arrange
         String email = "test@example.com";
         Authentication auth = new UsernamePasswordAuthenticationToken(email, null);
-        String token = tokenProvider.generateToken(auth);
+        String token = tokenProvider.generateToken(auth, TEST_USER_ID);
 
         // Act
         String extractedEmail = tokenProvider.getEmailFromToken(token);
@@ -49,7 +53,7 @@ class TokenProviderTest {
         // Arrange
         String email = "test@example.com";
         Authentication auth = new UsernamePasswordAuthenticationToken(email, null);
-        String token = tokenProvider.generateToken(auth);
+        String token = tokenProvider.generateToken(auth, TEST_USER_ID);
         String tokenWithBearer = "Bearer " + token;
 
         // Act
@@ -67,7 +71,7 @@ class TokenProviderTest {
         Authentication auth = new UsernamePasswordAuthenticationToken(email, null);
 
         // Act
-        String token = tokenProvider.generateToken(auth);
+        String token = tokenProvider.generateToken(auth, TEST_USER_ID);
         String extractedEmail = tokenProvider.getEmailFromToken(token);
 
         // Assert
@@ -81,10 +85,12 @@ class TokenProviderTest {
         String email2 = "user2@test.com";
         Authentication auth1 = new UsernamePasswordAuthenticationToken(email1, null);
         Authentication auth2 = new UsernamePasswordAuthenticationToken(email2, null);
+        UUID userId1 = UUID.randomUUID();
+        UUID userId2 = UUID.randomUUID();
 
         // Act
-        String token1 = tokenProvider.generateToken(auth1);
-        String token2 = tokenProvider.generateToken(auth2);
+        String token1 = tokenProvider.generateToken(auth1, userId1);
+        String token2 = tokenProvider.generateToken(auth2, userId2);
 
         // Assert
         assertNotEquals(token1, token2);
@@ -92,6 +98,3 @@ class TokenProviderTest {
         assertEquals(email2, tokenProvider.getEmailFromToken(token2));
     }
 }
-
-
-
