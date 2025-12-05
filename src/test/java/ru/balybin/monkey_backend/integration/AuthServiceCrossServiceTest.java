@@ -64,13 +64,13 @@ class AuthServiceCrossServiceTest {
         String response = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
         AuthResponse authResponse = objectMapper.readValue(response, AuthResponse.class);
-        jwtToken = authResponse.getToken();
+        jwtToken = authResponse.getAccessToken();
     }
 
     @Test
@@ -136,7 +136,7 @@ class AuthServiceCrossServiceTest {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         // Step 2: Login
         LoginRequest loginRequest = new LoginRequest();
@@ -152,7 +152,7 @@ class AuthServiceCrossServiceTest {
                 .getContentAsString();
 
         AuthResponse loginAuthResponse = objectMapper.readValue(loginResponse, AuthResponse.class);
-        String loginToken = loginAuthResponse.getToken();
+        String loginToken = loginAuthResponse.getAccessToken();
 
         // Step 3: Use token to get user info
         User user = userRepository.findByEmail(newUserEmail);
@@ -181,7 +181,7 @@ class AuthServiceCrossServiceTest {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest2)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         User user2 = userRepository.findByEmail(secondUserEmail);
         assertNotNull(user2, "Second user should exist");

@@ -79,13 +79,13 @@ class AuthChatMicroserviceIntegrationTest {
         String response = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
         AuthResponse authResponse = objectMapper.readValue(response, AuthResponse.class);
-        jwtToken = authResponse.getToken();
+        jwtToken = authResponse.getAccessToken();
         assertNotNull(jwtToken);
     }
 
@@ -223,7 +223,7 @@ class AuthChatMicroserviceIntegrationTest {
                 .getContentAsString();
 
         AuthResponse authResponse = objectMapper.readValue(loginResponse, AuthResponse.class);
-        String loginToken = authResponse.getToken();
+        String loginToken = authResponse.getAccessToken();
 
         // 2. Chat-microservice использует этот токен для получения информации о пользователе
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/users/{userId}", user.getId())

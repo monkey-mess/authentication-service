@@ -16,12 +16,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.balybin.monkey_backend.DTO.request.LoginRequest;
 import ru.balybin.monkey_backend.DTO.request.RegisterRequest;
 import ru.balybin.monkey_backend.DTO.response.AuthResponse;
-import ru.balybin.monkey_backend.DTO.response.UserProfileResponse;
 import ru.balybin.monkey_backend.config.TokenProvider;
 import ru.balybin.monkey_backend.config.UserMapper;
 import ru.balybin.monkey_backend.exception.UserException;
 import ru.balybin.monkey_backend.model.User;
+import ru.balybin.monkey_backend.model.RefreshToken;
 import ru.balybin.monkey_backend.service.UserService;
+import ru.balybin.monkey_backend.service.RefreshTokenService;
 
 import java.util.UUID;
 
@@ -46,6 +47,9 @@ class AuthControllerTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private RefreshTokenService refreshTokenService;
+
     @InjectMocks
     private AuthController authController;
 
@@ -55,7 +59,8 @@ class AuthControllerTest {
     private User testUser;
     private String testEmail;
     private String testPassword;
-    private String testJwt;
+    private String testAccess;
+    private RefreshToken testRefresh;
 
     @BeforeEach
     void setUp() {
@@ -64,7 +69,8 @@ class AuthControllerTest {
 
         testEmail = "test@example.com";
         testPassword = "password123";
-        testJwt = "test.jwt.token";
+        testAccess = "test.jwt.token";
+        testRefresh = new RefreshToken("refresh.token", UUID.randomUUID(), java.time.Instant.now().plusSeconds(3600));
 
         testUser = new User();
         testUser.setId(UUID.randomUUID());
@@ -79,29 +85,25 @@ class AuthControllerTest {
         registerRequest.setEmail(testEmail);
         registerRequest.setPassword(testPassword);
 
-        UserProfileResponse profileResponse = new UserProfileResponse(
-                UUID.randomUUID(), testEmail
-        );
-
         when(userMapper.toEntity(any(RegisterRequest.class))).thenReturn(testUser);
         when(userService.registerUser(any(User.class))).thenReturn(testUser);
-        when(tokenProvider.generateToken(any(), any())).thenReturn(testJwt);
-        when(userMapper.toProfileResponse(any(User.class))).thenReturn(profileResponse);
+        when(tokenProvider.generateToken(any(), any())).thenReturn(testAccess);
+        when(refreshTokenService.create(any(UUID.class))).thenReturn(testRefresh);
 
         // Act
         ResponseEntity<AuthResponse> response = authController.register(registerRequest);
 
         // Assert
         assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
+        assertEquals(201, response.getStatusCode().value());
         assertNotNull(response.getBody());
-        assertEquals(testJwt, response.getBody().getToken());
-        assertEquals(profileResponse, response.getBody().getUserInfo());
+        assertEquals(testUser.getId(), response.getBody().getUserId());
+        assertEquals(testAccess, response.getBody().getAccessToken());
+        assertNotNull(response.getBody().getRefreshToken());
 
         verify(userMapper, times(1)).toEntity(any(RegisterRequest.class));
         verify(userService, times(1)).registerUser(any(User.class));
         verify(tokenProvider, times(1)).generateToken(any(Authentication.class), any(UUID.class));
-        verify(userMapper, times(1)).toProfileResponse(any(User.class));
     }
 
     @Test
@@ -111,22 +113,19 @@ class AuthControllerTest {
         registerRequest.setEmail(testEmail);
         registerRequest.setPassword(testPassword);
 
-        UserProfileResponse profileResponse = new UserProfileResponse(
-                UUID.randomUUID(), testEmail
-        );
-
         when(userMapper.toEntity(any(RegisterRequest.class))).thenReturn(testUser);
         when(userService.registerUser(any(User.class))).thenReturn(testUser);
-        when(tokenProvider.generateToken(any(), any())).thenReturn(testJwt);
-        when(userMapper.toProfileResponse(any(User.class))).thenReturn(profileResponse);
+        when(tokenProvider.generateToken(any(), any())).thenReturn(testAccess);
+        when(refreshTokenService.create(any(UUID.class))).thenReturn(testRefresh);
 
         // Act & Assert
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value(testJwt))
-                .andExpect(jsonPath("$.userInfo.email").value(testEmail));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.userId").value(testUser.getId().toString()))
+                .andExpect(jsonPath("$.accessToken").value(testAccess))
+                .andExpect(jsonPath("$.refreshToken").exists());
     }
 
     @Test
@@ -136,14 +135,10 @@ class AuthControllerTest {
         loginRequest.setEmail(testEmail);
         loginRequest.setPassword(testPassword);
 
-        UserProfileResponse profileResponse = new UserProfileResponse(
-                UUID.randomUUID(), testEmail
-        );
-
         when(userService.findUserByEmail(testEmail)).thenReturn(testUser);
         when(passwordEncoder.matches(testPassword, testUser.getPassword())).thenReturn(true);
-        when(tokenProvider.generateToken(any(), any())).thenReturn(testJwt);
-        when(userMapper.toProfileResponse(any(User.class))).thenReturn(profileResponse);
+        when(tokenProvider.generateToken(any(), any())).thenReturn(testAccess);
+        when(refreshTokenService.create(any(UUID.class))).thenReturn(testRefresh);
 
         // Act
         ResponseEntity<AuthResponse> response = authController.login(loginRequest);
@@ -152,13 +147,13 @@ class AuthControllerTest {
         assertNotNull(response);
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
-        assertEquals(testJwt, response.getBody().getToken());
-        assertEquals(profileResponse, response.getBody().getUserInfo());
+        assertEquals(testUser.getId(), response.getBody().getUserId());
+        assertEquals(testAccess, response.getBody().getAccessToken());
+        assertNotNull(response.getBody().getRefreshToken());
 
         verify(userService, times(1)).findUserByEmail(testEmail);
         verify(passwordEncoder, times(1)).matches(testPassword, testUser.getPassword());
         verify(tokenProvider, times(1)).generateToken(any(Authentication.class), any(UUID.class));
-        verify(userMapper, times(1)).toProfileResponse(any(User.class));
     }
 
     @Test
@@ -189,22 +184,19 @@ class AuthControllerTest {
         loginRequest.setEmail(testEmail);
         loginRequest.setPassword(testPassword);
 
-        UserProfileResponse profileResponse = new UserProfileResponse(
-                UUID.randomUUID(), testEmail
-        );
-
         when(userService.findUserByEmail(testEmail)).thenReturn(testUser);
         when(passwordEncoder.matches(testPassword, testUser.getPassword())).thenReturn(true);
-        when(tokenProvider.generateToken(any(Authentication.class), any(UUID.class)));
-        when(userMapper.toProfileResponse(any(User.class))).thenReturn(profileResponse);
+        when(tokenProvider.generateToken(any(Authentication.class), any(UUID.class))).thenReturn(testAccess);
+        when(refreshTokenService.create(any(UUID.class))).thenReturn(testRefresh);
 
         // Act & Assert
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value(testJwt))
-                .andExpect(jsonPath("$.userInfo.email").value(testEmail));
+                .andExpect(jsonPath("$.userId").value(testUser.getId().toString()))
+                .andExpect(jsonPath("$.accessToken").value(testAccess))
+                .andExpect(jsonPath("$.refreshToken").exists());
     }
 }
 

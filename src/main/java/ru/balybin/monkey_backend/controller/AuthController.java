@@ -13,7 +13,12 @@ import ru.balybin.monkey_backend.config.TokenProvider;
 import ru.balybin.monkey_backend.config.UserMapper;
 import ru.balybin.monkey_backend.exception.UserException;
 import ru.balybin.monkey_backend.model.User;
+import ru.balybin.monkey_backend.model.RefreshToken;
+import ru.balybin.monkey_backend.service.RefreshTokenService;
 import ru.balybin.monkey_backend.service.UserService;
+import ru.balybin.monkey_backend.DTO.request.RefreshRequest;
+import ru.balybin.monkey_backend.DTO.request.LogoutRequest;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,13 +27,16 @@ public class AuthController  {
     private final TokenProvider tokenProvider;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthController(UserService userService, TokenProvider tokenProvider,
-                          UserMapper userMapper, PasswordEncoder passwordEncoder) {
+                          UserMapper userMapper, PasswordEncoder passwordEncoder,
+                          RefreshTokenService refreshTokenService) {
         this.userService = userService;
         this.tokenProvider = tokenProvider;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @PostMapping("/register")
@@ -37,8 +45,9 @@ public class AuthController  {
         User savedUser = userService.registerUser(user);
         Authentication auth = new UsernamePasswordAuthenticationToken(savedUser.getEmail(), null);
         String jwt = tokenProvider.generateToken(auth, savedUser.getId());
-        AuthResponse authResponse = new AuthResponse(jwt, userMapper.toProfileResponse(savedUser));
-        return ResponseEntity.ok(authResponse);
+        RefreshToken refresh = refreshTokenService.create(savedUser.getId());
+        AuthResponse authResponse = new AuthResponse(savedUser.getId(), jwt, refresh.getToken());
+        return ResponseEntity.status(HttpStatus.CREATED).body(authResponse);
     }
 
     @PostMapping("/login")
@@ -51,8 +60,31 @@ public class AuthController  {
         Authentication auth = new UsernamePasswordAuthenticationToken(user.getEmail(), null);
 
         String jwt = tokenProvider.generateToken(auth, user.getId());
-        AuthResponse authResponse = new AuthResponse(jwt, userMapper.toProfileResponse(user));
+        RefreshToken refresh = refreshTokenService.create(user.getId());
+        AuthResponse authResponse = new AuthResponse(user.getId(), jwt, refresh.getToken());
 
         return ResponseEntity.ok(authResponse);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        RefreshToken existing = refreshTokenService.validate(request.getRefreshToken());
+        User user = userService.findUserById(existing.getUserId());
+
+        // rotate refresh
+        refreshTokenService.delete(request.getRefreshToken());
+        RefreshToken newRefresh = refreshTokenService.create(user.getId());
+
+        Authentication auth = new UsernamePasswordAuthenticationToken(user.getEmail(), null);
+        String newAccess = tokenProvider.generateToken(auth, user.getId());
+
+        AuthResponse authResponse = new AuthResponse(user.getId(), newAccess, newRefresh.getToken());
+        return ResponseEntity.ok(authResponse);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody LogoutRequest request) {
+        refreshTokenService.delete(request.getRefreshToken());
+        return ResponseEntity.ok().build();
     }
 }

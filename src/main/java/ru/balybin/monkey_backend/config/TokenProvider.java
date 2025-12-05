@@ -53,4 +53,17 @@ public class TokenProvider {
         String email = String.valueOf(claims.get("email"));
         return email;
     }
+
+    public UUID getUserIdFromToken(String jwt) {
+        if (jwt.startsWith("Bearer ")) {
+            jwt = jwt.substring(7);
+        }
+        Claims claims = Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(jwt)
+                .getPayload();
+        String userId = String.valueOf(claims.get("userId"));
+        return userId != null ? UUID.fromString(userId) : null;
+    }
 }
